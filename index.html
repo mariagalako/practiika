@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐱 SmartBooking PRO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #c2185b, #e91e63);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            color: #ad1457;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            color: #c2185b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+
+        .master-card {
+            background: #fff0f3;
+            border-radius: 20px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            text-align: center;
+        }
+
+        .master-card.selected {
+            border-color: #e91e63;
+            background: linear-gradient(135deg, #ffe4ed, #ffd6e0);
+            transform: scale(1.02);
+        }
+
+        .master-avatar {
+            font-size: 48px;
+        }
+
+        .master-name {
+            font-weight: bold;
+            font-size: 18px;
+            color: #c2185b;
+        }
+
+        .master-rating {
+            font-size: 14px;
+            color: #ff9800;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #c2185b;
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #ffb6c1;
+            border-radius: 28px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #e91e63;
+        }
+
+        button {
+            background: linear-gradient(135deg, #e91e63, #f06292);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #ab47bc, #8e24aa);
+        }
+
+        button.outline {
+            background: transparent;
+            border: 2px solid #e91e63;
+            color: #e91e63;
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #d32f2f, #f44336);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .booking-item {
+            background: #fff0f3;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .booking-info {
+            flex: 1;
+        }
+
+        .booking-client {
+            font-weight: bold;
+            color: #c2185b;
+        }
+
+        .booking-details {
+            font-size: 12px;
+            color: #ad1457;
+        }
+
+        .booking-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .booking-actions button {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .category-tree {
+            font-size: 14px;
+        }
+
+        .category-item {
+            padding: 6px 0 6px 20px;
+        }
+
+        .category-root {
+            font-weight: bold;
+            padding: 8px;
+            background: #ffe4ed;
+            border-radius: 12px;
+            margin: 4px 0;
+        }
+
+        .version-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .version-item {
+            background: #f5f5f5;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 12px;
+            font-size: 12px;
+            border-left: 3px solid #e91e63;
+        }
+
+        .current-version {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar input, .filter-bar select {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #ad1457;
+            font-size: 12px;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: #ad1457;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #323232;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 28px;
+            z-index: 1000;
+            animation: fadeInOut 3s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(20px); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🐱 SmartBooking PRO</h1>
+        <p class="subtitle">Запись к лучшим мастерам с любовью 💕</p>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <div class="card">
+                <h2>😺 Мой профиль</h2>
+                <div class="form-group">
+                    <input type="text" id="clientNameInput" placeholder="Ваше имя" value="Анна">
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button onclick="login()">🔐 Войти</button>
+                    <button onclick="logout()" class="outline" id="logoutBtn" style="display: none;">🚪 Выйти</button>
+                </div>
+                <div id="profileStatus" style="margin-top: 10px; color: #ad1457;"></div>
+            </div>
+
+            <div class="card">
+                <h2>👩‍💼 Наши мастера</h2>
+                <div id="mastersList" class="grid-3"></div>
+            </div>
+
+            <div class="card">
+                <h2>📝 Новая запись</h2>
+                <div class="form-group">
+                    <label>📅 Дата</label>
+                    <input type="date" id="bookingDate">
+                </div>
+                <div class="form-group">
+                    <label>⏰ Время</label>
+                    <input type="time" id="bookingTime">
+                </div>
+                <div class="form-group">
+                    <label>💰 Цена</label>
+                    <input type="number" id="bookingPrice" value="1500" step="100">
+                </div>
+                <button onclick="createBooking()" id="bookBtn" disabled>📝 Записаться</button>
+            </div>
+
+            <div class="card">
+                <h2>📋 Мои записи</h2>
+                <div class="filter-bar">
+                    <input type="date" id="filterDateFrom" placeholder="Дата от">
+                    <input type="date" id="filterDateTo" placeholder="Дата до">
+                    <button onclick="loadBookings()" class="outline" style="margin: 0;">🔍 Фильтр</button>
+                    <button onclick="clearFilters()" class="outline" style="margin: 0;">🗑️ Сброс</button>
+                </div>
+                <div id="myBookings" class="empty-message">😢 Войдите, чтобы увидеть свои записи</div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <h2>🌳 Категории услуг</h2>
+                <div id="categoriesTree" class="category-tree"></div>
+            </div>
+
+            <div class="card">
+                <h2>📜 История версий</h2>
+                <div class="form-group">
+                    <select id="versionBookingSelect" style="margin-bottom: 10px;">
+                        <option value="">-- Выберите запись --</option>
+                    </select>
+                    <button onclick="showVersions()" class="outline" style="width: 100%;">📖 Показать все версии</button>
+                </div>
+                <div id="versionsList" class="version-list"></div>
+            </div>
+
+            <div class="card">
+                <h2>🔄 Обновить запись</h2>
+                <div class="form-group">
+                    <select id="updateBookingSelect">
+                        <option value="">-- Выберите свою запись --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="number" id="newPrice" placeholder="Новая цена">
+                </div>
+                <button onclick="updateBooking()" class="secondary">✏️ Обновить цену</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        🎓 Учебная практика | PostgreSQL | Иерархия | Наследование | Версионирование
+    </footer>
+</div>
+
+<script>
+    let currentUser = null;
+    let selectedMasterId = null;
+    let masters = [];
+
+    function showToast(message, isError = false) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.style.background = isError ? '#d32f2f' : '#4caf50';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    async function loadMasters() {
+        try {
+            const res = await fetch('/api/masters');
+            masters = await res.json();
+            const mastersDiv = document.getElementById('mastersList');
+            if (masters.length === 0) {
+                mastersDiv.innerHTML = '<div class="empty-message">😢 Нет мастеров</div>';
+                return;
+            }
+            mastersDiv.innerHTML = masters.map(m => `
+                <div class="master-card" onclick="selectMaster(${m.id}, this)">
+                    <div class="master-avatar">${m.avatar || '🐱'}</div>
+                    <div class="master-name">${m.name}</div>
+                    <div class="master-rating">⭐ ${m.rating}</div>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error('Ошибка загрузки мастеров:', err);
+        }
+    }
+
+    function selectMaster(id, element) {
+        selectedMasterId = id;
+        document.querySelectorAll('.master-card').forEach(card => card.classList.remove('selected'));
+        element.classList.add('selected');
+        checkBookButton();
+    }
+
+    async function loadCategories() {
+        try {
+            const res = await fetch('/api/categories');
+            const categories = await res.json();
+            const tree = buildTree(categories);
+            const treeHtml = renderTree(tree);
+            document.getElementById('categoriesTree').innerHTML = treeHtml || '<div class="empty-message">📁 Нет категорий</div>';
+        } catch (err) {
+            console.error('Ошибка загрузки категорий:', err);
+        }
+    }
+
+    function buildTree(categories, parentId = null) {
+        return categories
+            .filter(c => c.parent_id === parentId || (parentId === null && c.parent_id === null))
+            .map(c => ({ ...c, children: buildTree(categories, c.id) }));
+    }
+
+    function renderTree(nodes, level = 0) {
+        if (!nodes || nodes.length === 0) return '';
+        return nodes.map(node => `
+            <div class="category-item" style="padding-left: ${level * 20}px">
+                ${level === 0 ? '<div class="category-root">' : ''}
+                📁 ${node.name}
+                ${level === 0 ? '</div>' : ''}
+                ${node.children.length ? renderTree(node.children, level + 1) : ''}
+            </div>
+        `).join('');
+    }
+
+    async function loadBookings() {
+        if (!currentUser) {
+            document.getElementById('myBookings').innerHTML = '<div class="empty-message">😢 Войдите, чтобы увидеть свои записи</div>';
+            return;
+        }
+
+        const dateFrom = document.getElementById('filterDateFrom').value;
+        const dateTo = document.getElementById('filterDateTo').value;
+        
+        let url = `/api/bookings?client_name=${encodeURIComponent(currentUser)}`;
+        if (dateFrom) url += `&date_from=${dateFrom}`;
+        if (dateTo) url += `&date_to=${dateTo}`;
+        
+        try {
+            const res = await fetch(url);
+            let bookings = await res.json();
+            
+            const myBookingsDiv = document.getElementById('myBookings');
+            
+            if (bookings.length === 0) {
+                myBookingsDiv.innerHTML = '<div class="empty-message">😢 У вас пока нет записей</div>';
+            } else {
+                myBookingsDiv.innerHTML = bookings.map(b => `
+                    <div class="booking-item">
+                        <div class="booking-info">
+                            <div class="booking-client">${b.client_name}</div>
+                            <div class="booking-details">
+                                📅 ${b.booking_date} ${b.booking_time} | 💰 ${b.price}₽
+                                ${b.is_deleted ? ' | 🗑️ УДАЛЕНО' : ''}
+                            </div>
+                        </div>
+                        <div class="booking-actions">
+                            ${!b.is_deleted ? `
+                                <button onclick="prepareUpdateBooking(${b.id}, ${b.price})" class="outline" style="padding: 4px 8px;">✏️</button>
+                                <button onclick="deleteBooking(${b.id})" class="danger" style="padding: 4px 8px;">🗑️</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            await loadBookingsForSelects(bookings.filter(b => !b.is_deleted));
+        } catch (err) {
+            console.error('Ошибка загрузки записей:', err);
+        }
+    }
+
+    async function loadBookingsForSelects(userBookings) {
+        const updateSelect = document.getElementById('updateBookingSelect');
+        const versionSelect = document.getElementById('versionBookingSelect');
+        
+        if (updateSelect) {
+            updateSelect.innerHTML = '<option value="">-- Выберите свою запись --</option>' + 
+                userBookings.map(b => `<option value="${b.id}" data-price="${b.price}">#${b.id} — ${b.booking_date} ${b.booking_time} (${b.price}₽)</option>`).join('');
+        }
+        
+        if (versionSelect) {
+            versionSelect.innerHTML = '<option value="">-- Выберите запись --</option>' + 
+                userBookings.map(b => `<option value="${b.id}">#${b.id} — ${b.booking_date}</option>`).join('');
+        }
+    }
+
+    function prepareUpdateBooking(bookingId, currentPrice) {
+        const updateSelect = document.getElementById('updateBookingSelect');
+        const newPriceInput = document.getElementById('newPrice');
+        
+        for (let i = 0; i < updateSelect.options.length; i++) {
+            if (updateSelect.options[i].value == bookingId) {
+                updateSelect.selectedIndex = i;
+                break;
+            }
+        }
+        newPriceInput.value = currentPrice;
+        newPriceInput.focus();
+    }
+
+    async function createBooking() {
+        if (!currentUser) { showToast('Сначала войдите!', true); return; }
+        if (!selectedMasterId) { showToast('Выберите мастера!', true); return; }
+        const date = document.getElementById('bookingDate').value;
+        const time = document.getElementById('bookingTime').value;
+        const price = document.getElementById('bookingPrice').value;
+        
+        if (!date || !time) { showToast('Заполните дату и время!', true); return; }
+        
+        try {
+            const res = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    client_name: currentUser,
+                    master_id: selectedMasterId,
+                    booking_date: date,
+                    booking_time: time,
+                    price: parseInt(price)
+                })
+            });
+            
+            if (res.ok) {
+                showToast('✅ Записано!');
+                document.getElementById('bookingDate').value = '';
+                document.getElementById('bookingTime').value = '';
+                await loadBookings();
+            } else {
+                const error = await res.json();
+                showToast('❌ Ошибка: ' + JSON.stringify(error), true);
+            }
+        } catch (err) {
+            showToast('❌ Ошибка: ' + err, true);
+        }
+    }
+
+    async function updateBooking() {
+        const bookingId = document.getElementById('updateBookingSelect').value;
+        const newPrice = document.getElementById('newPrice').value;
+        
+        if (!bookingId) { showToast('Выберите запись', true); return; }
+        if (!newPrice) { showToast('Введите новую цену', true); return; }
+        
+        try {
+            const res = await fetch(`/api/bookings/${bookingId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ price: parseInt(newPrice) })
+            });
+            
+            if (res.ok) {
+                showToast(`✅ Запись #${bookingId} обновлена!`);
+                await loadBookings();
+                document.getElementById('newPrice').value = '';
+            } else {
+                showToast('❌ Ошибка обновления', true);
+            }
+        } catch (err) {
+            showToast('❌ Ошибка: ' + err, true);
+        }
+    }
+
+    async function deleteBooking(bookingId) {
+        if (!confirm('🗑️ Вы уверены, что хотите удалить эту запись?')) return;
+        
+        try {
+            const res = await fetch(`/api/bookings/${bookingId}`, {
+                method: 'DELETE'
+            });
+            
+            if (res.ok) {
+                showToast('✅ Запись удалена');
+                await loadBookings();
+            } else {
+                const error = await res.json();
+                showToast('❌ Ошибка: ' + (error.error || 'Неизвестная ошибка'), true);
+            }
+        } catch (err) {
+            showToast('❌ Ошибка: ' + err, true);
+        }
+    }
+
+    async function showVersions() {
+        const bookingId = document.getElementById('versionBookingSelect').value;
+        if (!bookingId) { showToast('Выберите запись', true); return; }
+        
+        try {
+            const res = await fetch(`/api/bookings/${bookingId}/versions`);
+            const versions = await res.json();
+            
+            const versionsDiv = document.getElementById('versionsList');
+            if (versions.length === 0) {
+                versionsDiv.innerHTML = '<div class="empty-message">📭 Нет версий</div>';
+                return;
+            }
+            
+            versionsDiv.innerHTML = versions.map(v => `
+                <div class="version-item ${v.is_current ? 'current-version' : ''}">
+                    <strong>Версия ${v.version}</strong> 
+                    ${v.is_current ? '✅ ТЕКУЩАЯ' : ''}<br>
+                    💰 ${v.price}₽ | 📌 ${v.change_type || 'UPDATE'}<br>
+                    <small>Изменено: ${v.changed_at ? new Date(v.changed_at).toLocaleString() : 'н/д'}</small>
+                </div>
+            `).join('');
+        } catch (err) {
+            showToast('Ошибка загрузки версий: ' + err, true);
+        }
+    }
+
+    function login() {
+        const name = document.getElementById('clientNameInput').value.trim();
+        if (!name) { showToast('Введите имя!', true); return; }
+        currentUser = name;
+        document.getElementById('profileStatus').innerHTML = `✅ Вы вошли как ${currentUser}`;
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+        checkBookButton();
+        loadBookings();
+    }
+
+    function logout() {
+        currentUser = null;
+        selectedMasterId = null;
+        document.getElementById('profileStatus').innerHTML = '';
+        document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('myBookings').innerHTML = '<div class="empty-message">😢 Войдите, чтобы увидеть свои записи</div>';
+        document.getElementById('bookBtn').disabled = true;
+        document.getElementById('updateBookingSelect').innerHTML = '<option value="">-- Выберите свою запись --</option>';
+        document.getElementById('versionBookingSelect').innerHTML = '<option value="">-- Выберите запись --</option>';
+        document.getElementById('versionsList').innerHTML = '';
+        document.querySelectorAll('.master-card').forEach(card => card.classList.remove('selected'));
+    }
+
+    function clearFilters() {
+        document.getElementById('filterDateFrom').value = '';
+        document.getElementById('filterDateTo').value = '';
+        loadBookings();
+    }
+
+    function checkBookButton() {
+        const btn = document.getElementById('bookBtn');
+        if (btn) btn.disabled = !currentUser || !selectedMasterId;
+    }
+
+    async function init() {
+        await loadMasters();
+        await loadCategories();
+        await loadBookings();
+        
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('bookingDate').min = today;
+    }
+
+    init();
+</script>
+</body>
+</html>
